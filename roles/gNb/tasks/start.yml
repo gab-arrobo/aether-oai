@@ -1,0 +1,51 @@
+---
+
+- name: pull {{ oai.docker.container.gNbimage }} image
+  community.docker.docker_image:
+    name: "{{ oai.docker.container.gNbimage }}"
+    source: pull
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name: create {{ oai.docker.network.name }} network
+  community.docker.docker_network:
+    name: "{{ oai.docker.network.name }}"
+    driver: bridge
+    ipam_config:
+      - subnet: "{{ oai.docker.network.subnet }}"
+    state: present
+    driver_options:
+      com.docker.network.bridge.name: "{{ oai.docker.network.bridge.name }}"
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name: remove /tmp/oai-gnb.conf
+  file:
+    path: "/tmp/oai-gnb.conf"
+    state: absent
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name : copy gnb config file to /tmp/oai-gnb.conf
+  template:
+    src: "{{ ROOT_DIR }}/{{ oai.gnb.conf_file }}"
+    dest: /tmp/oai-gnb.conf
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name: create {{ oai.docker.container.gNbimage }} containers
+  community.docker.docker_container:
+    name: "rfsim5g-oai-gnb"
+    image: "{{ oai.docker.container.gNbimage }}"
+    networks: 
+      - name: "{{ oai.docker.network.name }}"
+        ipv4_address: "{{ oai.gnb.ip }}"
+    env:
+      USE_ADDITIONAL_OPTIONS: "-rfsimulator.serveraddr server --gNBs.[0].min_rxtxtime 6 --rfsim --sa"
+      USE_X3XX: "yes"
+    volumes:
+      - /tmp/oai-gnb.conf:/opt/oai-gnb/etc/gnb.conf
+    state: started
+    detach: true
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true

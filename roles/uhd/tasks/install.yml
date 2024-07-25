@@ -1,0 +1,93 @@
+---
+
+- name: update apt cache
+  apt:
+    update_cache: true
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name: install required system packages
+  apt:
+    pkg:
+      - autoconf
+      - automake
+      - build-essential 
+      - ccache
+      - cmake
+      - cpufrequtils
+      - doxygen
+      - ethtool
+      - g++
+      - git
+      - inetutils-tools
+      - libboost-all-dev
+      - libncurses5
+      - libncurses5-dev
+      - libusb-1.0-0
+      - libusb-1.0-0-dev
+      - libusb-dev
+      - python3-dev
+      - python3-mako
+      - python3-numpy
+      - python3-requests
+      - python3-scipy
+      - python3-setuptools
+      - python3-ruamel.yaml      
+    state: latest
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name: Clone OAE gNB repo
+  git:
+    repo: {{ uhd.repo }}
+    dest: /tmp/uhd
+    version: {{ uhd.branch }}
+    single_branch: yes
+  when: inventory_hostname in groups['gnbsim_nodes']
+
+- name: create 'host/build' directory in /tmp/uhd/host
+  file:
+    path: /tmp/uhd/host/build
+    state: directory
+  when: inventory_hostname in groups['gnbsim_nodes']
+
+- name: Run cmake
+  cmake:
+    src: /tmp/uhd/host
+    binary: /tmp/uhd/host/build
+# - name: Run cmake
+#   cmake: cmake ../
+#   args:
+#     chdir: /tmp/uhd/host/build
+#   when: inventory_hostname in groups['gnbsim_nodes']
+
+# - name: Compile UHD
+#   command: make -j "{{ ansible_processor_vcpus }}"
+#   args:
+#     chdir: /tmp/uhd/host/build
+#   when: inventory_hostname in groups['gnbsim_nodes']
+
+# - name: Optional test step
+#   command: make test
+#   args:
+#     chdir: /tmp/uhd/host/build
+#   ignore_errors: yes
+#   when: inventory_hostname in groups['gnbsim_nodes']
+#   become: true
+
+- name: Run 'install' target as root
+  make:
+    chdir: /tmp/uhd/host/build
+    target: install
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+  
+- name: Run ldconfig
+  command: ldconfig
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name: Download UHD images
+  command: uhd_images_downloader        
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
