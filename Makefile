@@ -48,11 +48,6 @@ oai-uEsim-stop:
 	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/uEsimulator.yml --tags stop \
 		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
 
-#### c. Provision oai ####
-oai-simulator-run:
-	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/simulator.yml --tags start \
-		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
-
 # run oai-docker-install before running setup
 oai-gNb-install: oai-docker-install oai-router-install oai-gNb-start
 oai-gNb-uninstall:  oai-gNb-stop oai-router-uninstall
