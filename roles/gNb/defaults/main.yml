@@ -1,0 +1,17 @@
+oai:
+  docker:
+    container:
+      gNbimage: oaisoftwarealliance/oai-gnb:develop
+    network:
+      name: public_net
+      subnet: "172.20.0.0/16"
+      bridge:
+        name: rfsim5g-public
+  simulation: true
+  gnb:
+    conf_file: roles/gNb/templates/gnb.sa.band78.fr1.106PRB.usrpb210.conf
+    ip: "172.20.0.2"
+
+core:
+  amf:
+    ip: "172.16.248.6"

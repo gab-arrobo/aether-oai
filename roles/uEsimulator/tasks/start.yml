@@ -1,0 +1,62 @@
+---
+
+- name: check if simluation is enabled else abort
+  fail:
+    msg: "Simulation is not enabled"
+  when: oai.simulation == false
+
+- name: pull {{ oai.docker.container.uEimage }} image
+  community.docker.docker_image:
+    name: "{{ oai.docker.container.uEimage }}"
+    source: pull
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name: remove /tmp/oai-ue.conf
+  file:
+    path: "/tmp/oai-ue.conf"
+    state: absent
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name : copy oai-ue config file to /tmp/oai-ue.conf
+  template:
+    src: "{{ ROOT_DIR }}/{{ oai.ue.conf_file }}"
+    dest: /tmp/oai-ue.conf
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
+
+- name: create {{ oai.docker.container.uEimage }} containers
+  community.docker.docker_container:
+    name: "rfsim5g-oai-nr-ue"
+    image: "{{ oai.docker.container.uEimage }}"
+    networks: 
+      - name: "{{ oai.docker.network.name }}"
+        # ipv4_address: "{{ oai.ue.ip }}"
+    env:
+      USE_ADDITIONAL_OPTIONS: "-r 106 --numerology 1 --band 78 -C 3619200000 --sa --rfsim --ssb 516 --nokrnmod --rfsimulator.serveraddr {{ oai.gnb.ip }}"
+    volumes:
+      - /tmp/oai-ue.conf:/opt/oai-nr-ue/etc/nr-ue.conf
+    devices:
+      - /dev/net/tun:/dev/net/tun  
+    privileged: true  
+    capabilities:
+    - NET_ADMIN
+    - NET_RAW
+    state: started
+    detach: true
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true  
+
+- pause:
+    seconds: 5
+
+- name: run ping command to check if the UE is running and show output
+  shell: |
+    docker exec rfsim5g-oai-nr-ue ping -c 2 -I oaitun_ue1 192.168.250.1
+  register: uEsimPingOutput
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
+
+- debug:
+    var: uEsimPingOutput.stdout_lines
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
