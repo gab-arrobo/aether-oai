@@ -54,10 +54,6 @@ oai-simulator-run:
 		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
 
 # run oai-docker-install before running setup
-sl: 
-	sleep 5
-
-# oai-start: oai-docker-install oai-router-install oai-gNb-start sl oai-uEsim-start
-oai-start: oai-router-install #ai-gNb-start sl oai-uEsim-start
-oai-stop:  oai-uEsim-stop oai-gNb-stop oai-router-uninstall
+oai-gNb-install: oai-docker-install oai-router-install oai-gNb-start
+oai-gNb-uninstall:  oai-gNb-stop oai-router-uninstall
 

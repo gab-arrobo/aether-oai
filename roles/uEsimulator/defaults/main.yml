@@ -4,9 +4,7 @@ oai:
       uEimage: oaisoftwarealliance/oai-nr-ue:develop
     network:
       name: public_net
-      subnet: "172.20.0.0/16"
-      bridge:
-        name: rfsim5g-public
+
   simulation: true
   gnb:
     ip: "172.20.0.2"

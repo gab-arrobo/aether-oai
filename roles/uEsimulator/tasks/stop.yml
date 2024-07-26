@@ -4,21 +4,21 @@
   community.docker.docker_container:
     name: "rfsim5g-oai-nr-ue"
     state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
   become: true
 
 - name: remove /tmp/oai-ue.conf
   file:
     path: "/tmp/oai-ue.conf"
     state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
   become: true
 
-- name: remove {{ gnbsim.docker.container.uEimage }} image
+- name: remove {{ oai.docker.container.uEimage }} image
   community.docker.docker_image:
-    name: "{{ gnbsim.docker.container.image }}"
+    name: "{{ oai.docker.container.uEimage }}"
     state: absent
     force_absent: true
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
   become: true
 
