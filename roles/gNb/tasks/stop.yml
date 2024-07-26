@@ -14,11 +14,11 @@
   when: inventory_hostname in groups['gnbsim_nodes']
   become: true
 
-# - name: remove {{ oai.docker.container.gNbimage }} image
-#   community.docker.docker_image:
-#     name: "{{ oai.docker.container.gNbimage }}"
-#     state: absent
-#     force_absent: true
-#   when: inventory_hostname in groups['gnbsim_nodes']
-#   become: true
+- name: remove {{ oai.docker.container.gNbimage }} image
+  community.docker.docker_image:
+    name: "{{ oai.docker.container.gNbimage }}"
+    state: absent
+    force_absent: true
+  when: inventory_hostname in groups['gnbsim_nodes']
+  become: true
 
