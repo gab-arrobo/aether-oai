@@ -57,6 +57,7 @@ oai-simulator-run:
 sl: 
 	sleep 5
 
-oai-start: oai-docker-install oai-router-install oai-gNb-start sl oai-uEsim-start
+# oai-start: oai-docker-install oai-router-install oai-gNb-start sl oai-uEsim-start
+oai-start: oai-router-install #ai-gNb-start sl oai-uEsim-start
 oai-stop:  oai-uEsim-stop oai-gNb-stop oai-router-uninstall
 
