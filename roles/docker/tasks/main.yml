@@ -7,11 +7,3 @@
 - name: uninstall oai/docker
   import_tasks: roles/docker/tasks/uninstall.yml
   tags: uninstall
-
-- name: start oai/dockers
-  import_tasks: roles/docker/tasks/start.yml
-  tags: start
-
-- name: stop oai/dockers
-  import_tasks: roles/docker/tasks/stop.yml
-  tags: stop

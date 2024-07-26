@@ -10,7 +10,7 @@
   become: true
   ignore_errors: yes
 
-- name: "remove a static route on core host for {{ gnbsim.router.macvlan.subnet_prefix }}.0.0/24 via {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
+- name: "remove a static route on core host for {{ oai.docker.network.subnet }} via {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
   shell: |
     ip route del {{ oai.docker.network.subnet }} via {{  hostvars[item]['ansible_default_ipv4']['address'] }}
   with_items: "{{ play_hosts | intersect(groups['gnbsim_nodes'][0]) | difference(groups['master_nodes']) }}"
