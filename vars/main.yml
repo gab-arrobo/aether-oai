@@ -4,6 +4,7 @@ oai:
       gNbimage: oaisoftwarealliance/oai-gnb:develop
       uEimage: oaisoftwarealliance/oai-nr-ue:develop
     network:
+      data_iface: data
       name: public_net
       subnet: "172.20.0.0/16"
       bridge:

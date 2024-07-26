@@ -6,98 +6,66 @@
 - name: "remove a static route on gnbsim host for {{ core.upf.ip_prefix }} via {{ core.amf.ip }}"
   shell: |
     ip route del {{ core.upf.ip_prefix }} via {{ core.amf.ip }}
-  when: (inventory_hostname in groups['gnbsim_nodes']) and (inventory_hostname not in groups['master_nodes'])
+  when: (inventory_hostname in groups['gnbsim_nodes'][0]) and (inventory_hostname not in groups['master_nodes'])
   become: true
   ignore_errors: yes
 
 - name: "remove a static route on core host for {{ gnbsim.router.macvlan.subnet_prefix }}.0.0/24 via {{ hostvars[item]['ansible_default_ipv4']['address'] }}"
   shell: |
-    ip route del {{ gnbsim.router.macvlan.subnet_prefix }}.{{ lookup('ansible.utils.index_of', groups['gnbsim_nodes'], 'eq', item) }}.0/24 via {{  hostvars[item]['ansible_default_ipv4']['address'] }}
-  with_items: "{{ play_hosts | intersect(groups['gnbsim_nodes']) | difference(groups['master_nodes']) }}"
+    ip route del {{ oai.docker.network.subnet }} via {{  hostvars[item]['ansible_default_ipv4']['address'] }}
+  with_items: "{{ play_hosts | intersect(groups['gnbsim_nodes'][0]) | difference(groups['master_nodes']) }}"
   when: (inventory_hostname in groups['master_nodes'])
   become: true
   ignore_errors: yes
 
-- name: "remove iptable rule: forward from {{ gnbsim.router.macvlan.iface }} to access"
+- name: "remove iptable rule: forward from {{ oai.docker.network.bridge.name }} to access"
   iptables:
     chain: FORWARD
     in_interface: "{{ core.upf.iface }}"
-    out_interface: "{{ gnbsim.router.macvlan.iface }}"
+    out_interface: "{{ oai.docker.network.bridge.name }}"
     jump: ACCEPT
     state: absent
-  when: (inventory_hostname in groups['gnbsim_nodes']) and (inventory_hostname in groups['master_nodes'])
+  when: (inventory_hostname in groups['gnbsim_nodes'][0]) and (inventory_hostname in groups['master_nodes'])
   become: true
   ignore_errors: yes
 
-- name: "remove iptable rule: forward from {{ gnbsim.router.macvlan.iface }} to access"
+- name: "remove iptable rule: forward from {{ oai.docker.network.bridge.name }} to access"
   iptables:
     chain: FORWARD
-    in_interface: "{{ gnbsim.router.macvlan.iface }}"
+    in_interface: "{{ oai.docker.network.bridge.name }}"
     out_interface: "{{ core.upf.iface }}"
     jump: ACCEPT
     state: absent
-  when: (inventory_hostname in groups['gnbsim_nodes']) and (inventory_hostname in groups['master_nodes'])
+  when: (inventory_hostname in groups['gnbsim_nodes'][0]) and (inventory_hostname in groups['master_nodes'])
   become: true
   ignore_errors: yes
 
-- name: "remove iptable rule: forward from {{ gnbsim.router.data_iface }} to {{ gnbsim.router.macvlan.iface }} "
+- name: "remove iptable rule: forward from {{ oai.docker.network.data_iface }} to {{ oai.docker.network.bridge.name }} "
   iptables:
     chain: FORWARD
-    in_interface: "{{ gnbsim.router.data_iface }}"
-    out_interface: "{{ gnbsim.router.macvlan.iface }}"
+    in_interface: "{{ oai.docker.network.data_iface }}"
+    out_interface: "{{ oai.docker.network.bridge.name }}"
     jump: ACCEPT
     state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
   become: true
 
-- name: "delete iptable rule: forward from {{ gnbsim.router.macvlan.iface }} to {{ gnbsim.router.data_iface }}"
+- name: "delete iptable rule: forward from {{ oai.docker.network.bridge.name }} to {{ oai.docker.network.data_iface }}"
   iptables:
     chain: FORWARD
-    in_interface: "{{ gnbsim.router.macvlan.iface }}"
-    out_interface: "{{ gnbsim.router.data_iface }}"
+    in_interface: "{{ oai.docker.network.bridge.name }}"
+    out_interface: "{{ oai.docker.network.data_iface }}"
     jump: ACCEPT
     state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
   become: true
 
-- name: find {{ gnbsim.router.data_iface }}'s netplan network directory
-  shell: basename $(find /*/systemd/network -maxdepth 1 -not -type d -name '*{{ gnbsim.router.data_iface }}.network' -print)
-  register: result
-  when: inventory_hostname in groups['gnbsim_nodes']
-  become: true
-
-- name: delete {{ systemd_network_dir }}/{{ result.stdout }}.d
-  file:
-    path: "{{ systemd_network_dir }}/{{ result.stdout }}.d"
+- name: delete {{ oai.docker.network.name }} network
+  community.docker.docker_network:
+    name: "{{ oai.docker.network.name }}"
     state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
-  become: true
-
-- name: delete {{ systemd_network_dir }}/20-gnbsim-access.network
-  file:
-    path: "{{ systemd_network_dir }}/20-gnbsim-access.network"
-    state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
-  become: true
-
-- name: delete  {{ systemd_network_dir }}/10-gnbsim-access.netdev
-  file:
-    path: "{{ systemd_network_dir }}/10-gnbsim-access.netdev"
-    state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
-  become: true
-
-# TODO: fix this hack (make a proper cleanup service)
-- name: remove {{ gnbsim.router.macvlan.iface }} macvlan interface
-  shell: |
-    ip link del {{ gnbsim.router.macvlan.iface }} || true
-  when: inventory_hostname in groups['gnbsim_nodes']
-  become: true
-
-- name: force systemd to reread configs
-  systemd:
-    daemon_reload: true
-  when: inventory_hostname in groups['gnbsim_nodes']
+    force: yes
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
   become: true
 
 - name: set net.ipv4.conf.all.arp_filter to 0
@@ -106,7 +74,7 @@
     value: '0'
     sysctl_set: true
     reload: true
-  when: (inventory_hostname in groups['gnbsim_nodes']) and (inventory_hostname not in groups['master_nodes'])
+  when: (inventory_hostname in groups['gnbsim_nodes'][0]) and (inventory_hostname not in groups['master_nodes'])
   become: true
 
 - name: set net.ipv4.conf.all.arp_ignore to 0
@@ -115,7 +83,7 @@
     value: '0'
     sysctl_set: true
     reload: true
-  when: (inventory_hostname in groups['gnbsim_nodes']) and (inventory_hostname not in groups['master_nodes'])
+  when: (inventory_hostname in groups['gnbsim_nodes'][0]) and (inventory_hostname not in groups['master_nodes'])
   become: true
 
 - name: set net.ipv4.conf.all.arp_announce to 0
@@ -124,7 +92,7 @@
     value: '0'
     sysctl_set: true
     reload: true
-  when: (inventory_hostname in groups['gnbsim_nodes']) and (inventory_hostname not in groups['master_nodes'])
+  when: (inventory_hostname in groups['gnbsim_nodes'][0]) and (inventory_hostname not in groups['master_nodes'])
   become: true
 
 - name: set net.ipv4.conf.all.rp_filter to 2
@@ -133,18 +101,18 @@
     value: '2'
     sysctl_set: true
     reload: true
-  when: (inventory_hostname in groups['gnbsim_nodes']) and (inventory_hostname not in groups['master_nodes'])
+  when: (inventory_hostname in groups['gnbsim_nodes'][0]) and (inventory_hostname not in groups['master_nodes'])
   become: true
 
 - name: force systemd to reread configs
   systemd:
     daemon_reload: true
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
   become: true
 
 - name: restart systemd-networkd
   systemd:
     name: systemd-networkd
     state: restarted
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['gnbsim_nodes'][0]
   become: true

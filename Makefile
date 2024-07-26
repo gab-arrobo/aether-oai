@@ -27,6 +27,13 @@ oai-docker-uninstall:
 	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/docker.yml --tags uninstall \
 		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
 
+oai-router-install:
+	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/router.yml --tags install \
+		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
+oai-router-uninstall:
+	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/router.yml --tags uninstall \
+		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
+
 oai-gNb-start:
 	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/gNb.yml --tags start \
 		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)

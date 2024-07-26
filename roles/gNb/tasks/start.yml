@@ -7,18 +7,6 @@
   when: inventory_hostname in groups['gnbsim_nodes']
   become: true
 
-- name: create {{ oai.docker.network.name }} network
-  community.docker.docker_network:
-    name: "{{ oai.docker.network.name }}"
-    driver: bridge
-    ipam_config:
-      - subnet: "{{ oai.docker.network.subnet }}"
-    state: present
-    driver_options:
-      com.docker.network.bridge.name: "{{ oai.docker.network.bridge.name }}"
-  when: inventory_hostname in groups['gnbsim_nodes']
-  become: true
-
 - name: remove /tmp/oai-gnb.conf
   file:
     path: "/tmp/oai-gnb.conf"
