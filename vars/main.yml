@@ -1,8 +1,8 @@
 oai:
   docker:
     container:
-      gNbimage: oaisoftwarealliance/oai-gnb:develop
-      uEimage: oaisoftwarealliance/oai-nr-ue:develop
+      gnb_image: oaisoftwarealliance/oai-gnb:develop
+      ue_image: oaisoftwarealliance/oai-nr-ue:develop
     network:
       data_iface: data
       name: public_net

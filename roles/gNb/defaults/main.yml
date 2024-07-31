@@ -1,7 +1,7 @@
 oai:
   docker:
     container:
-      gNbimage: oaisoftwarealliance/oai-gnb:develop
+      gnb_image: oaisoftwarealliance/oai-gnb:develop
     network:
       name: public_net
   simulation: true

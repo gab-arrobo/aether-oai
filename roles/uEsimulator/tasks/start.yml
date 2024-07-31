@@ -5,9 +5,9 @@
     msg: "Simulation is not enabled"
   when: oai.simulation == false
 
-- name: pull {{ oai.docker.container.uEimage }} image
+- name: pull {{ oai.docker.container.ue_image }} image
   community.docker.docker_image:
-    name: "{{ oai.docker.container.uEimage }}"
+    name: "{{ oai.docker.container.ue_image }}"
     source: pull
   when: inventory_hostname in groups['gnbsim_nodes']
   become: true
@@ -26,10 +26,10 @@
   when: inventory_hostname in groups['gnbsim_nodes']
   become: true
 
-- name: create {{ oai.docker.container.uEimage }} containers
+- name: create {{ oai.docker.container.ue_image }} containers
   community.docker.docker_container:
     name: "rfsim5g-oai-nr-ue"
-    image: "{{ oai.docker.container.uEimage }}"
+    image: "{{ oai.docker.container.ue_image }}"
     networks: 
       - name: "{{ oai.docker.network.name }}"
         # ipv4_address: "{{ oai.ue.ip }}"

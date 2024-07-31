@@ -20,7 +20,7 @@ To install oai-gNb, follow these steps:
    - run `oai-router-install` to create the network.
       - To remove the network, run `oai-router-remove`.
 3. Start the OAI-gNb Docker containers:
-   - Set the container image "gNbimage" for gNb.
+   - Set the container image "gnb_image" for gNb.
    - Set "simulation" to true to run in simulation mode.
    - Set "conf_file" path for coresponding conf file for gNb i.e for simulation/physical.
    - Set "ip" for gNb container, it should in same subnet as network.
@@ -28,7 +28,7 @@ To install oai-gNb, follow these steps:
    - Start docker container using `make oai-gNb-install`.
       - To stop the gNb, run `make oai-gNb-stop`.  
 4. Start the UE simulation:
-   - Set the container image "uEimage" for UeSimulation.
+   - Set the container image "ue_image" for UeSimulation.
    - Set "network" same as the network name used for gNb.
    - Set "gnb.ip" with the IP address of the gNb container.
    - Set "simulation" to true to run in simulation mode.

@@ -1,8 +1,8 @@
 ---
 
-- name: pull {{ oai.docker.container.gNbimage }} image
+- name: pull {{ oai.docker.container.gnb_image }} image
   community.docker.docker_image:
-    name: "{{ oai.docker.container.gNbimage }}"
+    name: "{{ oai.docker.container.gnb_image }}"
     source: pull
   when: inventory_hostname in groups['gnbsim_nodes']
   become: true
@@ -30,10 +30,10 @@
         -rfsimulator.serveraddr server --gNBs.[0].min_rxtxtime 6 --sa --usrp-tx-thread-config 1 -E --continuous-tx
       {% endif %}
 
-- name: create {{ oai.docker.container.gNbimage }} containers
+- name: create {{ oai.docker.container.gnb_image }} containers
   community.docker.docker_container:
     name: "rfsim5g-oai-gnb"
-    image: "{{ oai.docker.container.gNbimage }}"
+    image: "{{ oai.docker.container.gnb_image }}"
     networks: 
       - name: "{{ oai.docker.network.name }}"
         ipv4_address: "{{ oai.gnb.ip }}"

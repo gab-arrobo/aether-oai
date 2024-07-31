@@ -1,7 +1,7 @@
 oai:
   docker:
     container:
-      uEimage: oaisoftwarealliance/oai-nr-ue:develop
+      ue_image: oaisoftwarealliance/oai-nr-ue:develop
     network:
       name: public_net
 
