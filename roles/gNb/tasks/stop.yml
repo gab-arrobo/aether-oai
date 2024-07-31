@@ -4,14 +4,14 @@
   community.docker.docker_container:
     name: "rfsim5g-oai-gnb"
     state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: remove /tmp/oai-gnb.conf
   file:
     path: "/tmp/oai-gnb.conf"
     state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: remove {{ oai.docker.container.gnb_image }} image
@@ -19,6 +19,6 @@
     name: "{{ oai.docker.container.gnb_image }}"
     state: absent
     force_absent: true
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 

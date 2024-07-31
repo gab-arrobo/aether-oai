@@ -4,21 +4,21 @@
   community.docker.docker_image:
     name: "{{ oai.docker.container.gnb_image }}"
     source: pull
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: remove /tmp/oai-gnb.conf
   file:
     path: "/tmp/oai-gnb.conf"
     state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name : copy gnb config file to /tmp/oai-gnb.conf
   template:
     src: "{{ ROOT_DIR }}/{{ oai.gnb.conf_file }}"
     dest: /tmp/oai-gnb.conf
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: Set USE_ADDITIONAL_OPTIONS for gnb
@@ -44,5 +44,5 @@
       - /tmp/oai-gnb.conf:/opt/oai-gnb/etc/gnb.conf
     state: started
     detach: true
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true

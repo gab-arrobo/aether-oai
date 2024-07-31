@@ -9,21 +9,21 @@
   community.docker.docker_image:
     name: "{{ oai.docker.container.ue_image }}"
     source: pull
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: remove /tmp/oai-ue.conf
   file:
     path: "/tmp/oai-ue.conf"
     state: absent
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name : copy oai-ue config file to /tmp/oai-ue.conf
   template:
     src: "{{ ROOT_DIR }}/{{ oai.ue.conf_file }}"
     dest: /tmp/oai-ue.conf
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: create {{ oai.docker.container.ue_image }} containers
@@ -45,7 +45,7 @@
     - NET_RAW
     state: started
     detach: true
-  when: inventory_hostname in groups['gnbsim_nodes']
+  when: inventory_hostname in groups['oai_nodes']
   become: true  
 
 - pause:
@@ -55,8 +55,8 @@
   shell: |
     docker exec rfsim5g-oai-nr-ue ping -c 2 -I oaitun_ue1 192.168.250.1
   register: uEsimPingOutput
-  when: inventory_hostname in groups['gnbsim_nodes'][0]
+  when: inventory_hostname in groups['oai_nodes'][0]
 
 - debug:
     var: uEsimPingOutput.stdout_lines
-  when: inventory_hostname in groups['gnbsim_nodes'][0]
+  when: inventory_hostname in groups['oai_nodes'][0]

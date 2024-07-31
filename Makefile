@@ -34,21 +34,21 @@ oai-router-uninstall:
 	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/router.yml --tags uninstall \
 		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
 
-oai-gNb-start:
+oai-gnb-start:
 	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/gNb.yml --tags start \
 		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
-oai-gNb-stop:
+oai-gnb-stop:
 	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/gNb.yml --tags stop \
 		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
 
-oai-uEsim-start:
+oai-uesim-start:
 	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/uEsimulator.yml --tags start \
 		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
-oai-uEsim-stop:
+oai-uesim-stop:
 	ansible-playbook -i $(HOSTS_INI_FILE) $(OAI_ROOT_DIR)/uEsimulator.yml --tags stop \
 		--extra-vars "ROOT_DIR=$(ROOT_DIR)" --extra-vars $(EXTRA_VARS)
 
 # run oai-docker-install before running setup
-oai-gNb-install: oai-docker-install oai-router-install oai-gNb-start
-oai-gNb-uninstall:  oai-gNb-stop oai-router-uninstall
+oai-gnb-install: oai-docker-install oai-router-install oai-gnb-start
+oai-gnb-uninstall:  oai-gnb-stop oai-router-uninstall
 
