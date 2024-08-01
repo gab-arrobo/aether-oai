@@ -12,6 +12,7 @@ oai:
   simulation: true
   gnb:
     conf_file: gnb.sa.band78.fr1.106PRB.usrpb210.conf
+    ip: "172.20.0.2"
   ue:
     conf_file: ue.conf
 

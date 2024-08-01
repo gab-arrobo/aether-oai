@@ -1,7 +1,7 @@
 ---
 
 - name: provision uEsimulator
-  hosts: gnbsim_nodes
+  hosts: oai_nodes
   gather_facts: true
 
   vars_files:
