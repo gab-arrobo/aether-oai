@@ -34,7 +34,7 @@
       - name: "{{ oai.docker.network.name }}"
         # ipv4_address: "{{ oai.ue.ip }}"
     env:
-      USE_ADDITIONAL_OPTIONS: "-r 106 --numerology 1 --band 78 -C 3619200000 --sa --rfsim --ssb 516 --nokrnmod --rfsimulator.serveraddr {{ oai.gnb.ip }}"
+      USE_ADDITIONAL_OPTIONS: "-r 106 --numerology 1 --band 78 -C 3619200000 --sa --rfsim --ssb 516 --rfsimulator.serveraddr {{ oai.gnb.ip }}"
     volumes:
       - /tmp/oai-ue.conf:/opt/oai-nr-ue/etc/nr-ue.conf
     devices:
