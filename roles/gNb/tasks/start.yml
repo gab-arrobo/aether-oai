@@ -29,6 +29,7 @@
       {% else %}
         -rfsimulator.serveraddr server --gNBs.[0].min_rxtxtime 6 --sa --usrp-tx-thread-config 1 -E --continuous-tx
       {% endif %}
+  when: inventory_hostname in groups['oai_nodes']
 
 - name: create {{ oai.docker.container.gnb_image }} containers
   community.docker.docker_container:
