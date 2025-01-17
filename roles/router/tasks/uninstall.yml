@@ -1,8 +1,5 @@
 ---
 
-- set_fact:
-    systemd_network_dir: /etc/systemd/network
-
 - name: "remove a static route on oai host for {{ core.upf.access_subnet }} via {{ core.amf.ip }}"
   shell: |
     ip route del {{ core.upf.access_subnet }} via {{ core.amf.ip }}
