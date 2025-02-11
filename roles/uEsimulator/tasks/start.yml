@@ -30,34 +30,33 @@
   community.docker.docker_container:
     name: "rfsim5g-oai-nr-ue"
     image: "{{ oai.docker.container.ue_image }}"
-    networks: 
+    networks:
       - name: "{{ oai.docker.network.name }}"
-        # ipv4_address: "{{ oai.ue.ip }}"
     env:
       USE_ADDITIONAL_OPTIONS: "-r 106 --numerology 1 --band 78 -C 3619200000  --rfsim --ssb 516 --rfsimulator.serveraddr {{ oai.gnb.ip }}"
     volumes:
       - /tmp/oai-ue.conf:/opt/oai-nr-ue/etc/nr-ue.conf
     devices:
-      - /dev/net/tun:/dev/net/tun  
-    privileged: true  
+      - /dev/net/tun:/dev/net/tun
+    privileged: true
     capabilities:
     - NET_ADMIN
     - NET_RAW
     state: started
     detach: true
   when: inventory_hostname in groups['oai_nodes']
-  become: true  
+  become: true
 
 - pause:
     seconds: 10
 
 - set_fact:
-    ping_target: "{{ core.upf.core_subnet[:-3] }}"
+    ping_target: "{{ core.upf.core_subnet | regex_replace('(/.*$)', '') }}"
   when: inventory_hostname in groups['oai_nodes']
 
 - name: run ping command to check if the UE is running and show output
   shell: |
-    docker exec rfsim5g-oai-nr-ue ping -c 2 -I oaitun_ue1 {{ ping_target }}
+    docker exec rfsim5g-oai-nr-ue ping -I oaitun_ue1 -c 5 {{ ping_target }}
   register: uEsimPingOutput
   when: inventory_hostname in groups['oai_nodes'][0]
 

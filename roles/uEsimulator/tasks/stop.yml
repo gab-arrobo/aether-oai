@@ -21,4 +21,3 @@
     force_absent: true
   when: inventory_hostname in groups['oai_nodes'][0]
   become: true
-

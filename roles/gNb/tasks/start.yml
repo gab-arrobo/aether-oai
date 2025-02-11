@@ -25,24 +25,24 @@
   set_fact:
     USE_ADDITIONAL_OPTIONS: >
       {% if oai.simulation %}
-        -rfsimulator.serveraddr server --gNBs.[0].min_rxtxtime 6 --rfsim --sa
+        --gNBs.[0].min_rxtxtime 6 --rfsim --sa
       {% else %}
-        -rfsimulator.serveraddr server --gNBs.[0].min_rxtxtime 6 --sa --usrp-tx-thread-config 1 -E --continuous-tx
+        --sa --usrp-tx-thread-config 1 -E --continuous-tx
       {% endif %}
   when: inventory_hostname in groups['oai_nodes']
 
 - name: create {{ oai.docker.container.gnb_image }} containers
   community.docker.docker_container:
-    name: "rfsim5g-oai-gnb"
+    name: "oai-gnb"
     image: "{{ oai.docker.container.gnb_image }}"
-    networks: 
+    networks:
       - name: "{{ oai.docker.network.name }}"
-        ipv4_address: "{{ oai.gnb.ip }}"
     env:
       USE_ADDITIONAL_OPTIONS: "{{ USE_ADDITIONAL_OPTIONS }}"
       USE_X3XX: "yes"
     volumes:
       - /tmp/oai-gnb.conf:/opt/oai-gnb/etc/gnb.conf
+    privileged: true
     state: started
     detach: true
   when: inventory_hostname in groups['oai_nodes']
