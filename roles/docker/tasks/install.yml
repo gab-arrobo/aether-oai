@@ -1,5 +1,17 @@
 ---
 
+- name: check if docker is installed
+  command: docker --version
+  register: docker_valid
+  ignore_errors: yes
+
+- name: print docker version output
+  debug:
+    var: docker_valid.stdout
+
+- meta: end_play
+  when: docker_valid.failed == false
+
 - name: update apt cache
   apt:
     update_cache: true
@@ -77,10 +89,20 @@
   when: inventory_hostname in groups['oai_nodes']
   become: true
 
+- set_fact:
+    UBUNTU_VERSION: "{{ ansible_distribution_version }}"
+  when: inventory_hostname in groups['oai_nodes']
+
 - name: install docker module for Python
   pip:
     name: docker
-  when: inventory_hostname in groups['oai_nodes']
+  when: inventory_hostname in groups['oai_nodes'] and UBUNTU_VERSION is version_compare('24.04', '<')
+  become: true
+
+- name: install python3-docker package
+  apt:
+    name: python3-docker
+  when: inventory_hostname in groups['oai_nodes'] and UBUNTU_VERSION is version_compare('24.04', '>=')
   become: true
 
 - name: pull hello-world docker image
@@ -121,4 +143,3 @@
       chown {{ ansible_user }} /var/run/docker.sock
   when: inventory_hostname in groups['oai_nodes']
   become: true
-

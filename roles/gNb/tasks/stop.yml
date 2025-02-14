@@ -2,7 +2,7 @@
 
 - name: delete {{ oai.docker.container.gnb_image }} container
   community.docker.docker_container:
-    name: "rfsim5g-oai-gnb"
+    name: "oai-gnb"
     state: absent
   when: inventory_hostname in groups['oai_nodes']
   become: true
@@ -21,4 +21,3 @@
     force_absent: true
   when: inventory_hostname in groups['oai_nodes']
   become: true
-

@@ -45,7 +45,7 @@
     state: present
     driver_options:
       com.docker.network.bridge.name: "{{ oai.docker.network.bridge.name }}"
-  when: inventory_hostname in groups['oai_nodes'][0]
+  when: inventory_hostname in groups['oai_nodes'][0] and oai.simulation == true
   become: true
 
 - name: "add iptable rule: forward from {{ oai.docker.network.data_iface }} to {{ oai.docker.network.bridge.name }}"
@@ -54,7 +54,7 @@
     in_interface: "{{ oai.docker.network.data_iface }}"
     out_interface: "{{ oai.docker.network.bridge.name }}"
     jump: ACCEPT
-  when: inventory_hostname in groups['oai_nodes'][0]
+  when: inventory_hostname in groups['oai_nodes'][0] and oai.simulation == true
   become: true
 
 - name: "add iptable rule: forward from {{ oai.docker.network.bridge.name }} to {{ oai.docker.network.data_iface }}"
@@ -63,7 +63,7 @@
     in_interface: "{{ oai.docker.network.bridge.name }}"
     out_interface: "{{ oai.docker.network.data_iface }}"
     jump: ACCEPT
-  when: inventory_hostname in groups['oai_nodes'][0]
+  when: inventory_hostname in groups['oai_nodes'][0] and oai.simulation == true
   become: true
 
 - name: "add iptable rule: forward from {{ oai.docker.network.bridge.name }} to access"
@@ -72,7 +72,7 @@
     in_interface: "{{ oai.docker.network.bridge.name }}"
     out_interface: "access"
     jump: ACCEPT
-  when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname in groups['master_nodes'])
+  when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname in groups['master_nodes']) and oai.simulation == true
   become: true
 
 - name: "add iptable rule: forward from access to {{ oai.docker.network.bridge.name }}"
@@ -81,13 +81,13 @@
     in_interface: "access"
     out_interface: "{{ oai.docker.network.bridge.name }}"
     jump: ACCEPT
-  when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname in groups['master_nodes'])
+  when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname in groups['master_nodes']) and oai.simulation == true
   become: true
 
 # TODO: use ansible's net_static_route module
 - name: configure static route for upf traffic on oai node
   shell: |
-    ip route add {{ core.upf.access_subnet }} via {{ core.amf.ip }}
+    ip route add {{ core.upf.access_subnet | regex_replace('[0-9]+/24', '0/24') }} via {{ core.amf.ip }}
   when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname not in groups['master_nodes'])
   become: true
   ignore_errors: yes
