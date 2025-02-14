@@ -36,6 +36,54 @@
   when: inventory_hostname in groups['oai_nodes'][0]
   become: true
 
+- name: create {{ oai.docker.network.name }} network
+  community.docker.docker_network:
+    name: "{{ oai.docker.network.name }}"
+    driver: bridge
+    ipam_config:
+      - subnet: "{{ oai.docker.network.subnet }}"
+    state: present
+    driver_options:
+      com.docker.network.bridge.name: "{{ oai.docker.network.bridge.name }}"
+  when: inventory_hostname in groups['oai_nodes'][0] and oai.simulation == true
+  become: true
+
+- name: "add iptable rule: forward from {{ oai.docker.network.data_iface }} to {{ oai.docker.network.bridge.name }}"
+  iptables:
+    chain: FORWARD
+    in_interface: "{{ oai.docker.network.data_iface }}"
+    out_interface: "{{ oai.docker.network.bridge.name }}"
+    jump: ACCEPT
+  when: inventory_hostname in groups['oai_nodes'][0] and oai.simulation == true
+  become: true
+
+- name: "add iptable rule: forward from {{ oai.docker.network.bridge.name }} to {{ oai.docker.network.data_iface }}"
+  iptables:
+    chain: FORWARD
+    in_interface: "{{ oai.docker.network.bridge.name }}"
+    out_interface: "{{ oai.docker.network.data_iface }}"
+    jump: ACCEPT
+  when: inventory_hostname in groups['oai_nodes'][0] and oai.simulation == true
+  become: true
+
+- name: "add iptable rule: forward from {{ oai.docker.network.bridge.name }} to access"
+  iptables:
+    chain: FORWARD
+    in_interface: "{{ oai.docker.network.bridge.name }}"
+    out_interface: "access"
+    jump: ACCEPT
+  when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname in groups['master_nodes']) and oai.simulation == true
+  become: true
+
+- name: "add iptable rule: forward from access to {{ oai.docker.network.bridge.name }}"
+  iptables:
+    chain: FORWARD
+    in_interface: "access"
+    out_interface: "{{ oai.docker.network.bridge.name }}"
+    jump: ACCEPT
+  when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname in groups['master_nodes']) and oai.simulation == true
+  become: true
+
 # TODO: use ansible's net_static_route module
 - name: configure static route for upf traffic on oai node
   shell: |
