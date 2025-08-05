@@ -22,17 +22,17 @@ To install oai-gNB, follow these steps:
 3. Start the OAI-gNB Docker containers:
    - Set the container image "gnb_image" for gNB.
    - Set "simulation" to true to run in simulation mode.
-   - Set "conf_file" path for corresponding conf file for gNB i.e., for simulation.
-   - Set "ip" for gNB container, it should in same subnet as network.
+   - Set "gnb_conf" path for corresponding conf file for gNB i.e., for simulation.
+   - Set "gnb_ip" for gNB container, it should in same subnet as network.
    - Set "core.amf.ip" with IP address of Aether core.
    - Start docker container using `make oai-gNb-install`.
       - To stop the gNB, run `make oai-gNb-stop`.
 4. Start the UE simulation:
    - Set the container image "ue_image" for UeSimulation.
    - Set "network" same as the network name used for gNB.
-   - Set "gnb.ip" with the IP address of the gNB container.
+   - Set "gnb_ip" with the IP address of the gNB container.
    - Set "simulation" to true to run in simulation mode.
-   - Set "conf_file" path for corresponding conf file for UeSimulation.
+   - Set "ue_conf" path for corresponding conf file for UeSimulation.
    - Run `make oai-uEsim-start`.
       - To stop the UE simulation, run `make oai-uEsim-stop`.
 5. Check the results:

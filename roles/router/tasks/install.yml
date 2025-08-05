@@ -1,12 +1,17 @@
 ---
 
+- name: check if servers and config server length are equal
+  fail:
+    msg: "Mismatch in number of servers and oai nodes: {{ oai.servers|length }} vs {{ groups['oai_nodes']|length }}"
+  when: oai.servers|length != groups['oai_nodes']|length
+
 - name: set net.ipv4.conf.all.arp_filter to 1
   ansible.posix.sysctl:
     name: net.ipv4.conf.all.arp_filter
     value: '1'
     sysctl_set: true
     reload: true
-  when: inventory_hostname in groups['oai_nodes'][0]
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: set net.ipv4.conf.all.arp_ignore to 1
@@ -15,7 +20,7 @@
     value: '1'
     sysctl_set: true
     reload: true
-  when: inventory_hostname in groups['oai_nodes'][0]
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: set net.ipv4.conf.all.arp_announce to 2
@@ -24,7 +29,7 @@
     value: '2'
     sysctl_set: true
     reload: true
-  when: inventory_hostname in groups['oai_nodes'][0]
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: set net.ipv4.conf.all.rp_filter to 2
@@ -33,7 +38,7 @@
     value: '2'
     sysctl_set: true
     reload: true
-  when: inventory_hostname in groups['oai_nodes'][0]
+  when: inventory_hostname in groups['oai_nodes']
   become: true
 
 - name: create {{ oai.docker.network.name }} network
@@ -45,7 +50,7 @@
     state: present
     driver_options:
       com.docker.network.bridge.name: "{{ oai.docker.network.bridge.name }}"
-  when: inventory_hostname in groups['oai_nodes'][0] and oai.simulation == true
+  when: inventory_hostname in groups['oai_nodes'] and oai.docker.network.name != "host"
   become: true
 
 - name: "add iptable rule: forward from {{ oai.docker.network.data_iface }} to {{ oai.docker.network.bridge.name }}"
@@ -54,7 +59,7 @@
     in_interface: "{{ oai.docker.network.data_iface }}"
     out_interface: "{{ oai.docker.network.bridge.name }}"
     jump: ACCEPT
-  when: inventory_hostname in groups['oai_nodes'][0] and oai.simulation == true
+  when: inventory_hostname in groups['oai_nodes'] and oai.docker.network.name != "host"
   become: true
 
 - name: "add iptable rule: forward from {{ oai.docker.network.bridge.name }} to {{ oai.docker.network.data_iface }}"
@@ -63,7 +68,7 @@
     in_interface: "{{ oai.docker.network.bridge.name }}"
     out_interface: "{{ oai.docker.network.data_iface }}"
     jump: ACCEPT
-  when: inventory_hostname in groups['oai_nodes'][0] and oai.simulation == true
+  when: inventory_hostname in groups['oai_nodes'] and oai.docker.network.name != "host"
   become: true
 
 - name: "add iptable rule: forward from {{ oai.docker.network.bridge.name }} to access"
@@ -72,7 +77,7 @@
     in_interface: "{{ oai.docker.network.bridge.name }}"
     out_interface: "access"
     jump: ACCEPT
-  when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname in groups['master_nodes']) and oai.simulation == true
+  when: (inventory_hostname in groups['oai_nodes']) and (inventory_hostname in groups['master_nodes']) and oai.docker.network.name != "host"
   become: true
 
 - name: "add iptable rule: forward from access to {{ oai.docker.network.bridge.name }}"
@@ -81,14 +86,14 @@
     in_interface: "access"
     out_interface: "{{ oai.docker.network.bridge.name }}"
     jump: ACCEPT
-  when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname in groups['master_nodes']) and oai.simulation == true
+  when: (inventory_hostname in groups['oai_nodes']) and (inventory_hostname in groups['master_nodes']) and oai.docker.network.name != "host"
   become: true
 
 # TODO: use ansible's net_static_route module
 - name: configure static route for upf traffic on oai node
   shell: |
     ip route add {{ core.upf.access_subnet | regex_replace('[0-9]+/24', '0/24') }} via {{ core.amf.ip }}
-  when: (inventory_hostname in groups['oai_nodes'][0]) and (inventory_hostname not in groups['master_nodes']) and core.upf.multihop_gnb == false
+  when: (inventory_hostname in groups['oai_nodes']) and (inventory_hostname not in groups['master_nodes']) and core.upf.multihop_gnb == false
   become: true
   ignore_errors: yes
 
@@ -96,7 +101,7 @@
 - name: configure static route for oai traffic on aether node
   shell: |
     ip route add {{ oai.docker.network.subnet }} via {{  hostvars[item]['ansible_default_ipv4']['address'] }}
-  with_items: "{{ play_hosts | intersect(groups['oai_nodes'][0]) | difference(groups['master_nodes']) }}"
+  with_items: "{{ play_hosts | intersect(groups['oai_nodes']) | difference(groups['master_nodes']) }}"
   when: (inventory_hostname in groups['master_nodes'])
   become: true
   ignore_errors: yes

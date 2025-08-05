@@ -6,7 +6,7 @@ oai:
       name: public_net
 
   simulation: true
-  gnb:
-    ip: "172.20.0.2"
-  ue:
-    conf_file: roles/uEsimulator/templates/ue.conf
+  servers:
+    0:
+      gnb_ip: "172.20.0.2"
+      ue_conf: roles/uEsimulator/templates/ue.conf
